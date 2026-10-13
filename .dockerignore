@@ -1,0 +1,16 @@
+.git/
+.gitignore
+.github/
+tmp/
+bin/
+vendor/
+dist/
+*.test
+*.out
+*.exe
+.DS_Store
+README.md
+AGENTS.md
+CLAUDE.md
+.air.toml
+mise.toml
