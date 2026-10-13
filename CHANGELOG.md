@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/shanehull/housecycle/compare/v1.1.0...v1.2.0) (2026-10-13)
+
+
+### Features
+
+* use detrended Q for replacement cost valuation ([454358a](https://github.com/shanehull/housecycle/commit/454358a56e4597c2e2c0d647441fe40a918e41d7))
+
 ## [1.1.0](https://github.com/shanehull/housecycle/compare/v1.0.0...v1.1.0) (2026-10-13)
 
 
