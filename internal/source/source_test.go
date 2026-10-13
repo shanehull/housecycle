@@ -3,7 +3,21 @@ package source
 import (
 	"testing"
 	"time"
+
+	"github.com/shanehull/housecycle/internal/model"
 )
+
+func TestSumSeries(t *testing.T) {
+	d1 := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+	d2 := time.Date(2000, 2, 1, 0, 0, 0, 0, time.UTC)
+	d3 := time.Date(2000, 3, 1, 0, 0, 0, 0, time.UTC)
+	a := []model.Point{{Date: d1, Value: 1}, {Date: d2, Value: 2}}
+	b := []model.Point{{Date: d1, Value: 10}, {Date: d3, Value: 30}}
+	got := sumSeries(a, b)
+	if len(got) != 1 || got[0].Value != 11 || !got[0].Date.Equal(d1) {
+		t.Fatalf("want only the shared date summed, got %+v", got)
+	}
+}
 
 func TestParsePeriod(t *testing.T) {
 	cases := map[string]time.Time{

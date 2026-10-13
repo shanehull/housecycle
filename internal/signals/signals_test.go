@@ -81,6 +81,21 @@ func TestEvalValuationCheap(t *testing.T) {
 	}
 }
 
+func TestEvalValuationDetrendedQ(t *testing.T) {
+	loader := stubLoader{
+		"abs.au.housing_value":        quarterly(1990, 1, 120, 1000, 5),
+		"abs.au.dwelling_replacement": quarterly(1990, 1, 120, 800, 0),
+		"rba.housing_credit":          monthly(1990, 1, 360, 200, 0),
+	}
+	ind := evalValuation(context.Background(), loader)
+	if ind.Status == Unknown {
+		t.Fatal("expected an evaluation")
+	}
+	if len(ind.Charts) != 1 || ind.Charts[0].ID != "q" {
+		t.Fatalf("want the detrended Q chart, got %+v", ind.Charts)
+	}
+}
+
 func TestEvalRates(t *testing.T) {
 	cash := monthly(2020, 1, 36, 4.0, -0.05)
 	cpi := quarterly(2020, 1, 12, 3.0, -0.1)

@@ -12,10 +12,9 @@ import (
 	"github.com/shanehull/housecycle/internal/xlsx"
 )
 
-// The ABS household balance sheet (Table 35, 5232.0) is published only as an
-// XLSX data cube, not through the SDMX API. It values dwellings at replacement
-// cost and land at market value, from 1988, which gives the Misesian
-// Stationarity Index a market numerator and a replacement-cost denominator over decades.
+// The ABS household balance sheet (Table 35, 5232.0) is published as an XLSX
+// data cube. It values dwellings at replacement cost and land at market value,
+// from 1988, giving the Q ratio its replacement-cost denominator.
 const absHouseholdLatest = "https://www.abs.gov.au/statistics/economy/national-accounts/" +
 	"australian-national-accounts-finance-and-wealth/latest-release"
 

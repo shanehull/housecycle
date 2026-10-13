@@ -124,10 +124,10 @@ func Quantile(points []model.Point, p float64) (float64, bool) {
 	return vals[lo]*(1-frac) + vals[hi]*frac, true
 }
 
-// MSIndex computes the Misesian Stationarity Index of a ratio series: each ratio
-// is divided by the cumulative geometric mean of all ratios up to that point,
-// matching the shanehull.com formula, giving a stationary oscillator centred on 1.0.
-func MSIndex(ratio []model.Point) []model.Point {
+// Detrend divides each ratio by the cumulative geometric mean of all ratios up
+// to that point, giving a time-invariant, mean-reverting oscillator centred on
+// 1.0 that isolates short-term valuation anomalies.
+func Detrend(ratio []model.Point) []model.Point {
 	out := make([]model.Point, 0, len(ratio))
 	product := 1.0
 	for i, p := range ratio {

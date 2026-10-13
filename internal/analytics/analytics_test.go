@@ -39,6 +39,22 @@ func TestPercentileRank(t *testing.T) {
 	}
 }
 
+func TestDetrend(t *testing.T) {
+	flat := Detrend(series(3, 3, 3))
+	for i, p := range flat {
+		if math.Abs(p.Value-1) > 1e-9 {
+			t.Fatalf("flat series should detrend to 1, got %v at %d", p.Value, i)
+		}
+	}
+	rising := Detrend(series(1, 2))
+	if math.Abs(rising[1].Value-math.Sqrt2) > 1e-9 {
+		t.Fatalf("want sqrt(2), got %v", rising[1].Value)
+	}
+	if len(Detrend(nil)) != 0 {
+		t.Fatal("nil series should detrend to empty")
+	}
+}
+
 func TestAsOf(t *testing.T) {
 	pts := series(10, 20, 30) // Jan, Feb, Mar 2000
 	mid := time.Date(2000, 2, 20, 0, 0, 0, 0, time.UTC)

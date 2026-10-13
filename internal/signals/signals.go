@@ -1,6 +1,6 @@
 // Package signals turns stored series into the housing buy signals: valuation
-// (price to income, price to replacement cost, and the Misesian Stationarity
-// Index), volume, price stability, credit conditions, and the real cost of capital.
+// (price to income and the detrended Q ratio), volume, price stability, credit
+// conditions, and the real cost of capital.
 package signals
 
 import (
@@ -121,13 +121,13 @@ func Evaluate(ctx context.Context, loader Loader) *Dashboard {
 	return d
 }
 
-// --- Valuation: price to income, price to replacement cost, Misesian Stationarity Index ---
+// --- Valuation: price to income and the detrended Q ratio ---
 
 func evalValuation(ctx context.Context, loader Loader) Indicator {
 	ind := Indicator{
 		ID:    "valuation",
 		Name:  "Valuation",
-		Blurb: "Australian house prices measured against household income and against construction replacement cost, plus the Misesian Stationarity Index (household land and dwellings versus the cost of replacing them). Cheap on all three is the strongest buy signal.",
+		Blurb: "Australian house prices measured against household income, and the detrended Q ratio: the dwelling stock net of its housing debt, over the cost of replacing it, scaled by its running geometric mean. Cheap on both is the strongest buy signal.",
 	}
 
 	hpi := loadSeries(ctx, loader, "oecd.au.hpi")
@@ -148,43 +148,43 @@ func evalValuation(ctx context.Context, loader Loader) Indicator {
 				Target: fmt.Sprintf("<=%s", ord(int(cheapPct))),
 				Met:    pct <= cheapPct,
 			})
-			charts = append(charts, Chart{ID: "pti", Label: "Price-to-income", Unit: "ratio", Freq: "Q", Points: pti})
+			charts = append(charts, Chart{ID: "pti", Label: "Price-to-income", Unit: "ratio", Freq: "Q", Points: pti, Refs: quartileRefs(pti)})
 		}
 	}
 
-	// Misesian Stationarity Index: household housing value / replacement cost of the structure,
-	// scaled by its running geometric mean. The denominator is replacement cost
-	// (ABS values dwellings at replacement), so it does not rise with market
-	// prices and the signal is not inverted. ABS household balance sheet, 1988→.
+	// Detrended Q ratio: the market value of the dwelling stock less the housing
+	// credit against it, over what the structure would cost to rebuild, then
+	// divided by that ratio's running geometric mean so the oscillator is
+	// time-invariant and mean-reverting. Market value and replacement cost are
+	// the ABS household balance sheet; housing credit is RBA D2.
 	value := loadSeries(ctx, loader, "abs.au.housing_value")
 	replacement := loadSeries(ctx, loader, "abs.au.dwelling_replacement")
-	if value != nil && replacement != nil {
-		q := analytics.RatioSeries(value.Points, replacement.Points)
+	debt := loadSeries(ctx, loader, "rba.housing_credit")
+	if value != nil && replacement != nil && debt != nil {
+		var equity []model.Point
+		for _, p := range value.Points {
+			d, ok := analytics.AsOf(debt.Points, p.Date)
+			if !ok {
+				continue
+			}
+			equity = append(equity, model.Point{Date: p.Date, Value: p.Value - d})
+		}
+		ratio := analytics.RatioSeries(equity, replacement.Points)
+		q := analytics.Detrend(ratio)
 		if len(q) >= 8 {
-			msi := analytics.MSIndex(q)
-			lastQ, _ := analytics.Last(q)
-			lastM, _ := analytics.Last(msi)
-			qPct := analytics.PercentileRank(q, lastQ.Value)
-			msiPct := analytics.PercentileRank(msi, lastM.Value)
-			conditions = append(conditions,
-				Condition{
-					Label:  "Housing value cheap against replacement cost",
-					Value:  fmt.Sprintf("%.2f (%s)", lastQ.Value, pctile(qPct)),
-					Target: fmt.Sprintf("<=%s", ord(int(cheapPct))),
-					Met:    qPct <= cheapPct,
-				},
-				Condition{
-					Label:  "Misesian Stationarity Index cheap",
-					Value:  fmt.Sprintf("%.2f (%s)", lastM.Value, pctile(msiPct)),
-					Target: fmt.Sprintf("<=%s", ord(int(cheapPct))),
-					Met:    msiPct <= cheapPct,
-				},
-			)
-			charts = append(charts,
-				Chart{ID: "q", Label: "Housing value / replacement cost", Unit: "ratio", Freq: "Q", Points: q, Refs: quartileRefs(q)},
-				Chart{ID: "msi", Label: "Misesian Stationarity Index", Unit: "index", Freq: "Q", Points: msi, Refs: quartileRefs(msi)},
-			)
-			ind.Note = fmt.Sprintf("Household land and dwellings / dwellings at replacement cost, from %s; the index is that ratio scaled by its running geometric mean.", q[0].Date.Format("Jan 2006"))
+			last, _ := analytics.Last(q)
+			pct := analytics.PercentileRank(q, last.Value)
+			conditions = append(conditions, Condition{
+				Label:  "Detrended Q ratio cheap",
+				Value:  fmt.Sprintf("%.2f (%s)", last.Value, pctile(pct)),
+				Target: fmt.Sprintf("<=%s", ord(int(cheapPct))),
+				Met:    pct <= cheapPct,
+			})
+			charts = append(charts, Chart{
+				ID: "q", Label: "Detrended Q ratio", Unit: "index", Freq: "Q",
+				Points: q, Refs: quartileRefs(q),
+			})
+			ind.Note = fmt.Sprintf("Residential land and dwellings less housing credit, over dwellings at replacement cost, scaled by its running geometric mean, from %s.", ratio[0].Date.Format("Jan 2006"))
 		}
 	}
 
@@ -224,7 +224,7 @@ func evalVolume(ctx context.Context, loader Loader) Indicator {
 		Met:    pct <= volumeLowPct,
 	}}, []Chart{{
 		ID: "transfers_per_capita", Label: "Dwelling transfers per 1,000 residents", Unit: "per 1,000",
-		Freq: "Q", Points: rate,
+		Freq: "Q", Points: rate, Refs: quartileRefs(rate),
 	}})
 	return ind
 }
@@ -322,7 +322,7 @@ func evalCreditConditions(ctx context.Context, loader Loader) Indicator {
 			})
 			charts = append(charts, Chart{
 				ID: "credit_spread", Label: "Corporate A-rated spread, 5-year", Unit: "pp", Freq: "M",
-				Points: spread,
+				Points: spread, Refs: quartileRefs(spread),
 			})
 		}
 	}
@@ -370,7 +370,7 @@ func evalRates(ctx context.Context, loader Loader) Indicator {
 	}}, []Chart{{
 		ID: "real_rate", Label: "Real cash rate (cash rate minus CPI)", Unit: "%",
 		Freq: "M", Points: real,
-		Refs: []Ref{{Label: "0%", Value: 0, Kind: "parity"}},
+		Refs: append(quartileRefs(real), Ref{Label: "0%", Value: 0, Kind: "parity"}),
 	}})
 	return ind
 }
