@@ -110,8 +110,8 @@ func (s *Server) routes() http.Handler {
 	mux.HandleFunc("/", s.index)
 	mux.HandleFunc("/refresh", s.doRefresh)
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte("ok"))
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"status":"ok"}`))
 	})
 	return s.logRequests(gzipHandler(secureHeaders(mux)))
 }
