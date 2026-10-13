@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/shanehull/housecycle/compare/v1.0.0...v1.1.0) (2026-10-13)
+
+
+### Features
+
+* use debt-to-income in place of credit growth ([cc236bf](https://github.com/shanehull/housecycle/commit/cc236bf634778e5bc43cd7ba1faa136c7f3e9438))
+
 ## 1.0.0 (2026-10-13)
 
 
