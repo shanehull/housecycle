@@ -1,0 +1,70 @@
+{{define "index.html"}}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="htmx-config" content='{"inlineScriptNonce":"{{.ScriptNonce}}","inlineStyleNonce":"{{.StyleNonce}}"}'/>
+  <title>housecycle · Australian housing buy-signal monitor</title>
+  <meta name="description" content="Long-run signals on Australian housing: valuation, transaction volume, price stability, credit conditions, and the real cost of capital. A research tool, not financial advice."/>
+  <link rel="canonical" href="https://housecycle.shanehull.com/"/>
+  <meta name="theme-color" content="#f4f5f8" media="(prefers-color-scheme: light)"/>
+  <meta name="theme-color" content="#0b0d16" media="(prefers-color-scheme: dark)"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:site_name" content="housecycle"/>
+  <meta property="og:title" content="housecycle · Australian housing buy-signal monitor"/>
+  <meta property="og:description" content="Long-run signals on Australian housing: valuation, transaction volume, price stability, credit conditions, and the real cost of capital."/>
+  <meta property="og:url" content="https://housecycle.shanehull.com/"/>
+  <meta property="og:image" content="https://housecycle.shanehull.com/static/og.png"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+  <meta property="og:image:alt" content="housecycle - Australian housing buy-signal monitor"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="housecycle · Australian housing buy-signal monitor"/>
+  <meta name="twitter:description" content="Long-run signals on Australian housing: valuation, volume, price stability, credit conditions, and the real cost of capital."/>
+  <meta name="twitter:image" content="https://housecycle.shanehull.com/static/og.png"/>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin/>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg"/>
+  <link rel="apple-touch-icon" href="/static/apple-touch-icon.png"/>
+  <style nonce="{{.StyleNonce}}">{{.CSS}}</style>
+  {{range .Scripts}}<script src="{{.URL}}" {{.IntegrityAttr}} crossorigin="anonymous" defer></script>
+  {{end}}
+  <script src="/static/app.js" defer></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "housecycle",
+    "url": "https://housecycle.shanehull.com/",
+    "description": "Long-run signals on Australian housing: valuation, transaction volume, price stability, credit conditions, and the real cost of capital.",
+    "applicationCategory": "FinanceApplication",
+    "operatingSystem": "Web",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "AUD" }
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="/">
+        <svg class="brand-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" aria-hidden="true">
+          <path fill="currentColor" d="M341.8 72.6C329.5 61.2 310.5 61.2 298.3 72.6L74.3 280.6C64.7 289.6 61.5 303.5 66.3 315.7C71.1 327.9 82.8 336 96 336L112 336L112 512C112 547.3 140.7 576 176 576L262.4 576L231.1 523.8C227 517 228.5 508.3 234.6 503.3L320 432L259.8 349.2C248.9 334.2 268 315.7 282.6 327.2L400.5 419.8C408.5 426.1 408.7 438.2 400.9 444.7L320 512L358.4 576L464 576C499.3 576 528 547.3 528 512L528 336L544 336C557.2 336 569 327.9 573.8 315.7C578.6 303.5 575.4 289.5 565.8 280.6L341.8 72.6z"/>
+        </svg>
+        housecycle
+      </a>
+      <span class="header-note">Australian housing buy-signal monitor</span>
+    </div>
+  </header>
+  <main>
+    <div class="container">
+      {{template "dashboard.html" .}}
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div class="container">
+      Data: OECD, ABS, RBA. A bit of fun, not financial advice. No one can call a top or a bottom.
+      <span class="footer-credits">House icon: <a href="https://fontawesome.com/license/free" rel="noopener">Font Awesome Free</a> (CC BY 4.0)</span>
+    </div>
+  </footer>
+</body>
+</html>
+{{end}}

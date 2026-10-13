@@ -1,0 +1,88 @@
+{{define "dashboard.html"}}
+<div id="dashboard">
+  <style nonce="{{.StyleNonce}}">{{cssVars .Dashboard}}</style>
+  <div class="toolbar">
+    <div class="hero-eyebrow">Australia · buy conditions</div>
+    <span class="spacer"></span>
+    <button class="btn" hx-post="/refresh" hx-target="#dashboard" hx-swap="outerHTML" hx-indicator="#spinner">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"/></svg>
+      Refresh data
+    </button>
+    <span id="spinner" class="htmx-indicator spinner" aria-label="loading"></span>
+  </div>
+
+  <section class="hero">
+    <div class="ring" role="img" aria-label="{{.Dashboard.SignalsMet}} of {{.Dashboard.Evaluated}} buy conditions met">
+      <svg viewBox="0 0 120 120" class="ring-svg">
+        <defs>
+          <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#f5a524"/>
+            <stop offset="1" stop-color="#48c774"/>
+          </linearGradient>
+        </defs>
+        <circle class="ring-track" cx="60" cy="60" r="52"></circle>
+        <circle class="ring-fill" cx="60" cy="60" r="52"></circle>
+      </svg>
+      <div class="ring-center">
+        <span class="ring-value">{{.Dashboard.SignalsMet}}</span>
+        <span class="ring-of">of {{.Dashboard.Evaluated}}</span>
+      </div>
+    </div>
+    <div class="hero-copy">
+      <h1 class="hero-title">{{headline .Dashboard.SignalsMet .Dashboard.Evaluated}}</h1>
+      <p class="hero-sub">{{subline .Dashboard.SignalsMet .Dashboard.Evaluated}}</p>
+      <div class="hero-meta">
+        <span class="faint">Updated {{.Ingested}}</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid">
+    {{range $ind := .Dashboard.Indicators}}
+    <section class="card indicator ind-{{$ind.ID}} status-{{statusClass $ind.Status}}">
+      <div class="card-head">
+        <span class="status-dot" aria-hidden="true"></span>
+        <h2>{{$ind.Name}}</h2>
+        <span class="spacer"></span>
+        <span class="pill pill-{{statusClass $ind.Status}}">{{statusLabel $ind.Status}}</span>
+      </div>
+      <div class="meter" aria-hidden="true"><span class="meter-fill"></span></div>
+      <p class="blurb muted">{{$ind.Blurb}}</p>
+
+      {{if $ind.Conditions}}
+      <ul class="conditions">
+        {{range $ind.Conditions}}
+        <li class="{{if .Met}}met{{else}}unmet{{end}}">
+          <span class="tick" aria-hidden="true">{{if .Met}}<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>{{else}}<svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>{{end}}</span>
+          <span class="cond-label">{{.Label}}</span>
+          <span class="spacer"></span>
+          <span class="cond-value">{{.Value}}</span>
+          <span class="cond-target faint">{{.Target}}</span>
+        </li>
+        {{end}}
+      </ul>
+      {{else}}
+      <p class="empty faint">No series available.</p>
+      {{end}}
+
+      {{if $ind.Note}}<p class="note faint">{{$ind.Note}}</p>{{end}}
+
+      {{if $ind.Charts}}
+      <div class="charts">
+        {{range $ind.Charts}}
+          {{if safePoints .}}
+          <figure class="chart-figure">
+            <figcaption>{{.Label}}</figcaption>
+            <div class="chart-wrap"><canvas id="{{chartID (printf "%s--%s" $ind.ID .ID)}}"></canvas></div>
+          </figure>
+          {{end}}
+        {{end}}
+      </div>
+      {{end}}
+    </section>
+    {{end}}
+  </div>
+
+  <script type="application/json" id="housecycle-data" nonce="{{.ScriptNonce}}">{{.JSON}}</script>
+</div>
+{{end}}

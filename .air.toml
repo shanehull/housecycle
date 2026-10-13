@@ -1,0 +1,35 @@
+# Air hot reload for local development. `air` rebuilds the binary and restarts
+# it on any change to Go, templates, CSS, or JS.
+#
+# Configuration is read from the environment and air passes the parent
+# environment through unchanged. Export what you need before running air:
+#
+#   export HOUSECYCLE_ADDR=:9090
+#   air
+#
+# Anything unset falls back to the application defaults (see README).
+
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "go build -o ./tmp/housecycle ./cmd/housecycle"
+  bin = "./tmp/housecycle"
+  delay = 500
+  include_ext = ["go", "html", "css", "js"]
+  exclude_dir = ["tmp", ".git"]
+  exclude_regex = ["_test\\.go$"]
+  kill_delay = "2s"
+  log = "tmp/air-errors.log"
+  stop_on_error = true
+
+[log]
+  main_only = false
+  time = true
+
+[misc]
+  clean_on_exit = true
+
+[screen]
+  clear_on_rebuild = false
+  keep_scroll = true
