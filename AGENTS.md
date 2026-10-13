@@ -61,6 +61,6 @@ All free and keyless. ABS via SDMX-JSON for the main series, plus the household 
 
 ## Frontend
 
-Go `html/template` plus htmx plus Chart.js, one binary, no node step. Third-party scripts load from jsDelivr (Chart.js and htmx), matching shanehull.com. Local CSS and JS are embedded with `embed.FS` and served from `/static/`.
+Go `html/template` plus Chart.js, one binary, no node step. Third-party scripts load from jsDelivr (Chart.js), matching shanehull.com. Local CSS and JS are embedded with `embed.FS` and served from `/static/`.
 
 Security headers are set for every response, including a Content-Security-Policy with a per-request script nonce and style nonce. There are no inline `style` attributes: dynamic values (the ring offset and meter widths) are CSS custom properties set through a nonce-authorised `<style>` block. Third-party scripts are pinned by SRI. Their URLs and sha384 hashes live in `internal/web/cdn.go` as the single source of truth, feeding both the `integrity` attributes and the CSP. After bumping a script version, run `go run ./cmd/sri` to print the new hashes (it flags drift), then update that file.

@@ -24,11 +24,6 @@ func (s CDNScript) IntegrityAttr() template.HTMLAttr {
 // CDNScripts is the single source of truth for third-party frontend scripts.
 var CDNScripts = []CDNScript{
 	{
-		Name:      "htmx",
-		URL:       "https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js",
-		Integrity: "sha384-H5SrcfygHmAuTDZphMHqBJLc3FhssKjG7w/CeCpFReSfwBWDTKpkzPP8c+cLsK+V",
-	},
-	{
 		Name:      "chart.js",
 		URL:       "https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js",
 		Integrity: "sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ",

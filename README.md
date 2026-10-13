@@ -23,14 +23,14 @@ Series IDs: `oecd.au.hpi`, `abs.au.awe`, `abs.au.house_construction`, `abs.au.dw
 ## How it works
 
 ```
-OECD / ABS / RBA  ->  ingest  ->  in-memory cache  ->  signals  ->  htmx + Chart.js
+OECD / ABS / RBA  ->  ingest  ->  in-memory cache  ->  signals  ->  Chart.js
 ```
 
 - `internal/source`: one adapter per provider, all emitting `model.Series`. OECD is CSV; ABS is SDMX-JSON; RBA parses named columns from its statistics CSVs. Every source is public and keyless.
-- `internal/cache`: an in-memory cache of fetched series, no database or disk. The app refetches on startup and on demand.
+- `internal/cache`: an in-memory cache of fetched series, no database or disk. The app refetches on startup.
 - `internal/analytics`: the pure maths (percentile rank, changes, forward-fill, the MS index).
 - `internal/signals`: the signal definitions. Thresholds sit at the top of `signals.go`.
-- `internal/web`: the dashboard and its htmx fragment, with chart data embedded as JSON for Chart.js.
+- `internal/web`: the dashboard, with chart data embedded as JSON for Chart.js.
 
 ## Quick start
 

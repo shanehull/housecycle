@@ -63,7 +63,7 @@ func run(ctx context.Context) error {
 	}
 	cancel()
 
-	srv, err := web.New(st, runIngest, web.Options{
+	srv, err := web.New(st, web.Options{
 		Addr:   *addr,
 		Logger: log,
 	})

@@ -38,11 +38,10 @@ type Options struct {
 	Logger          *slog.Logger
 }
 
-// Server renders the dashboard and handles refresh.
+// Server renders the dashboard.
 type Server struct {
-	store   Store
-	refresh func(context.Context) error
-	opts    Options
+	store Store
+	opts  Options
 
 	tmpl    *template.Template
 	static  fs.FS
@@ -51,7 +50,7 @@ type Server struct {
 }
 
 // New builds a Server and its underlying HTTP server.
-func New(st Store, refresh func(context.Context) error, opts Options) (*Server, error) {
+func New(st Store, opts Options) (*Server, error) {
 	if opts.Logger == nil {
 		opts.Logger = slog.Default()
 	}
@@ -92,7 +91,7 @@ func New(st Store, refresh func(context.Context) error, opts Options) (*Server, 
 		return nil, err
 	}
 
-	s := &Server{store: st, refresh: refresh, opts: opts, tmpl: tmpl, static: static, css: template.CSS(css)}
+	s := &Server{store: st, opts: opts, tmpl: tmpl, static: static, css: template.CSS(css)}
 	s.httpSrv = &http.Server{
 		Addr:              opts.Addr,
 		Handler:           s.routes(),
@@ -109,7 +108,6 @@ func (s *Server) routes() http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle("/static/", static)
 	mux.HandleFunc("/", s.index)
-	mux.HandleFunc("/refresh", s.doRefresh)
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`{"status":"ok"}`))
@@ -348,35 +346,19 @@ func (s *Server) index(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	// htmx swaps want the fragment; a browser load wants the full page.
-	name := "index.html"
-	if r.Header.Get("HX-Request") == "true" {
-		name = "dashboard.html"
-	}
-	s.render(w, r, name)
+	s.render(w, r)
 }
 
-func (s *Server) render(w http.ResponseWriter, r *http.Request, name string) {
+func (s *Server) render(w http.ResponseWriter, r *http.Request) {
 	data, err := s.build(r.Context())
 	if err != nil {
 		s.handleError(w, r, err)
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := s.tmpl.ExecuteTemplate(w, name, data); err != nil {
-		s.opts.Logger.ErrorContext(r.Context(), "render failed", slog.String("template", name), slog.Any("error", err))
+	if err := s.tmpl.ExecuteTemplate(w, "index.html", data); err != nil {
+		s.opts.Logger.ErrorContext(r.Context(), "render failed", slog.Any("error", err))
 	}
-}
-
-func (s *Server) doRefresh(w http.ResponseWriter, r *http.Request) {
-	if s.refresh != nil {
-		ctx, cancel := context.WithTimeout(r.Context(), 2*time.Minute)
-		defer cancel()
-		if err := s.refresh(ctx); err != nil {
-			s.opts.Logger.WarnContext(r.Context(), "refresh", slog.Any("error", err))
-		}
-	}
-	s.render(w, r, "dashboard.html")
 }
 
 func (s *Server) handleError(w http.ResponseWriter, r *http.Request, err error) {
@@ -444,7 +426,7 @@ func headline(hits, evaluated int) string {
 func subline(hits, evaluated int) string {
 	switch {
 	case evaluated == 0:
-		return "Refresh to pull fresh data from every source."
+		return "No data from the sources yet."
 	case hits == evaluated && hits > 0:
 		return "Every tracked condition is flashing buy."
 	case hits >= formingThreshold:

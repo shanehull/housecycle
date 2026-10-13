@@ -116,7 +116,4 @@
   }
 
   document.addEventListener('DOMContentLoaded', render);
-  document.addEventListener('htmx:afterSwap', (e) => {
-    if (e.detail && e.detail.target && e.detail.target.id === 'dashboard') render();
-  });
 })();
