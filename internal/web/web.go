@@ -417,13 +417,17 @@ func cssVars(d *signals.Dashboard) template.CSS {
 	return template.CSS(b.String())
 }
 
+// formingThreshold is the majority of the five signals: below it the headline
+// reports no buy rather than conditions forming.
+const formingThreshold = 3
+
 func headline(hits, evaluated int) string {
 	switch {
 	case evaluated == 0:
 		return "No data yet"
 	case hits == evaluated && hits > 0:
 		return "Buy conditions are in place"
-	case hits >= 2:
+	case hits >= formingThreshold:
 		return "Buy conditions are forming"
 	default:
 		return "Not a buy yet"
@@ -436,7 +440,7 @@ func subline(hits, evaluated int) string {
 		return "Refresh to pull fresh data from every source."
 	case hits == evaluated && hits > 0:
 		return "Every tracked condition is flashing buy."
-	case hits >= 2:
+	case hits >= formingThreshold:
 		return "Some conditions have turned. The rest still need to follow."
 	default:
 		return "The market is not capitulating yet. Patience pays."
