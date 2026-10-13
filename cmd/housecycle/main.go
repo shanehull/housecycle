@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/shanehull/housecycle/internal/buildinfo"
 	"github.com/shanehull/housecycle/internal/cache"
 	"github.com/shanehull/housecycle/internal/ingest"
 	"github.com/shanehull/housecycle/internal/source"
@@ -32,7 +33,8 @@ func run(ctx context.Context) error {
 	addr := flag.String("addr", env("HOUSECYCLE_ADDR", ":8080"), "HTTP listen address")
 	flag.Parse()
 
-	log := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+	log := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo})).
+		With(slog.String("version", buildinfo.GitTag))
 
 	st := cache.New()
 

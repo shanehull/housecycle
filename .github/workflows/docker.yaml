@@ -64,6 +64,8 @@ jobs:
           push: true
           tags: ${{ steps.meta-main.outputs.tags }}
           labels: ${{ steps.meta-main.outputs.labels }}
+          build-args: |
+            GIT_TAG=${{ github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -76,5 +78,7 @@ jobs:
           push: true
           tags: ${{ steps.meta-tag.outputs.tags }}
           labels: ${{ steps.meta-tag.outputs.labels }}
+          build-args: |
+            GIT_TAG=${{ github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

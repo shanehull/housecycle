@@ -4,7 +4,11 @@ WORKDIR /app
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /app/housecycle ./cmd/housecycle
+ARG GIT_TAG=dev
+
+RUN CGO_ENABLED=0 GOOS=linux go build \
+    -ldflags="-s -w -X github.com/shanehull/housecycle/internal/buildinfo.GitTag=${GIT_TAG}" \
+    -o /app/housecycle ./cmd/housecycle
 
 FROM scratch
 

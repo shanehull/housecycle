@@ -18,6 +18,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/shanehull/housecycle/internal/buildinfo"
 	"github.com/shanehull/housecycle/internal/signals"
 )
 
@@ -305,6 +306,7 @@ type pageData struct {
 	JSON        template.JS
 	CSS         template.CSS
 	Ingested    string
+	Version     string
 	Scripts     []CDNScript
 	ScriptNonce string
 	StyleNonce  string
@@ -325,11 +327,16 @@ func (s *Server) build(ctx context.Context) (pageData, error) {
 		ingested = updated.Format("2 Jan 2006 15:04")
 	}
 	n, _ := ctx.Value(nonceKey{}).(nonces)
+	version := buildinfo.GitTag
+	if version == "" {
+		version = "dev"
+	}
 	return pageData{
 		Dashboard:   d,
 		JSON:        template.JS(raw),
 		CSS:         s.css,
 		Ingested:    ingested,
+		Version:     version,
 		Scripts:     CDNScripts,
 		ScriptNonce: n.Script,
 		StyleNonce:  n.Style,
