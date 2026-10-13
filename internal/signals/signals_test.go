@@ -48,12 +48,11 @@ func TestClassify(t *testing.T) {
 }
 
 func TestEvalCreditConditionsBuy(t *testing.T) {
-	// Subdued lending growth and a wide risk spread: a washed-out, sober market.
+	// Falling leverage and a wide risk spread: a washed-out, sober market.
 	loader := stubLoader{
-		"rba.housing_credit_growth":  monthly(2002, 7, 120, 20, -0.1),
-		"rba.investor_credit_growth": monthly(2002, 7, 120, 20, -0.1),
-		"rba.corp_yield_5y":          monthly(2002, 7, 120, 4, 0.05),
-		"rba.ags_5y":                 monthly(2002, 7, 120, 3, 0),
+		"rba.debt_to_income": quarterly(1988, 1, 120, 160, -1),
+		"rba.corp_yield_5y":  monthly(2002, 7, 120, 4, 0.05),
+		"rba.ags_5y":         monthly(2002, 7, 120, 3, 0),
 	}
 	ind := evalCreditConditions(context.Background(), loader)
 	if ind.Status != Buy {
@@ -120,17 +119,16 @@ func TestEvalVolume(t *testing.T) {
 
 func TestEvaluateCounts(t *testing.T) {
 	loader := stubLoader{
-		"oecd.au.hpi":                quarterly(1996, 1, 60, 60, 1),
-		"abs.au.awe":                 quarterly(1996, 1, 60, 1000, 30),
-		"abs.au.house_construction":  quarterly(1996, 1, 60, 60, 1.2),
-		"abs.au.dwelling_transfers":  monthly(2002, 7, 120, 40000, -100),
-		"abs.au.population":          monthly(2002, 7, 120, 20000000, 0),
-		"rba.housing_credit_growth":  monthly(2002, 7, 120, 20, -0.1),
-		"rba.investor_credit_growth": monthly(2002, 7, 120, 20, -0.1),
-		"rba.corp_yield_5y":          monthly(2002, 7, 120, 4, 0.05),
-		"rba.ags_5y":                 monthly(2002, 7, 120, 3, 0),
-		"rba.cash_rate":              monthly(2020, 1, 36, 4.0, -0.05),
-		"rba.cpi_yoy":                quarterly(2020, 1, 12, 3.0, -0.1),
+		"oecd.au.hpi":               quarterly(1996, 1, 60, 60, 1),
+		"abs.au.awe":                quarterly(1996, 1, 60, 1000, 30),
+		"abs.au.house_construction": quarterly(1996, 1, 60, 60, 1.2),
+		"abs.au.dwelling_transfers": monthly(2002, 7, 120, 40000, -100),
+		"abs.au.population":         monthly(2002, 7, 120, 20000000, 0),
+		"rba.debt_to_income":        quarterly(1988, 1, 120, 160, -1),
+		"rba.corp_yield_5y":         monthly(2002, 7, 120, 4, 0.05),
+		"rba.ags_5y":                monthly(2002, 7, 120, 3, 0),
+		"rba.cash_rate":             monthly(2020, 1, 36, 4.0, -0.05),
+		"rba.cpi_yoy":               quarterly(2020, 1, 12, 3.0, -0.1),
 	}
 	d := Evaluate(context.Background(), loader)
 	if d.Evaluated != 5 {

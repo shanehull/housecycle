@@ -82,6 +82,36 @@ func TestParseSDMX(t *testing.T) {
 	}
 }
 
+const rbaE2Fixture = `E2 HOUSEHOLD FINANCES – SELECTED RATIOS
+Title,Household debt to assets,Household debt to income
+Description,Ratio of household debt to household assets,Ratio of household debt to annualised household disposable income
+Frequency,Quarterly,Quarterly
+Type,Original,Original
+Units,Per cent,Per cent
+
+Source,ABS,ABS
+Publication date,25-Sep-2026,25-Sep-2026
+Series ID,BHFDA,BHFDDIT
+31/03/1988,100.0,60.5
+30/06/1988,101.0,61.5
+`
+
+func TestParseRBAColumn(t *testing.T) {
+	pts, err := parseRBAColumn([]byte(rbaE2Fixture), "Household debt to income")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(pts) != 2 || pts[0].Value != 60.5 || pts[1].Value != 61.5 {
+		t.Fatalf("unexpected points: %+v", pts)
+	}
+	if got := pts[0].Date.Format("2006-01-02"); got != "1988-03-31" {
+		t.Fatalf("want 1988-03-31, got %s", got)
+	}
+	if _, err := parseRBAColumn([]byte(rbaE2Fixture), "No such column"); err == nil {
+		t.Fatal("expected error for a missing column")
+	}
+}
+
 func TestCellDate(t *testing.T) {
 	// Excel serial 32387 is 1988-09-01; ISO strings are also accepted.
 	for in, want := range map[string]string{

@@ -13,12 +13,12 @@ The best signal stays off the dashboard: it is when friends stop talking about b
 | Valuation            | House prices relative to income, and the Misesian Stationarity Index (household land and dwellings ÷ dwellings at replacement cost) scaled by its running geometric mean. | OECD, ABS | 1988 →  |
 | Volume               | Dwelling transfers, all buyers, per resident, so the rate stays comparable as the population drifts.                                                                      | ABS       | 2002 →  |
 | Price stability      | Construction cost growth near zero and the cash rate on hold.                                                                                                             | ABS, RBA  | 1996 →  |
-| Credit conditions    | The flow and price of credit: housing and investor credit growth, and the corporate credit spread. Contrarian: tight, sober credit is the entry, not loose and cheap.     | RBA       | 1977 →  |
+| Credit conditions    | Household leverage (debt-to-income against its own history) and the price of credit risk (the corporate spread). Tight, sober credit is the entry.                        | RBA       | 1988 →  |
 | Real cost of capital | Cash rate minus year-ended CPI inflation. Housing is the most rate-sensitive asset; a low real rate drives affordability.                                                 | RBA       | 1990 →  |
 
 Each signal evaluates one or more rules and returns a status: not yet, forming, or buy conditions met. The header score is how many of the five are at buy.
 
-Series IDs: `oecd.au.hpi`, `abs.au.awe`, `abs.au.house_construction`, `abs.au.dwelling_transfers`, `abs.au.population`, `abs.au.housing_value`, `abs.au.dwelling_replacement`, `rba.cash_rate`, `rba.cpi_yoy`, `rba.housing_credit_growth`, `rba.investor_credit_growth`, `rba.corp_yield_5y`, `rba.ags_5y`.
+Series IDs: `oecd.au.hpi`, `abs.au.awe`, `abs.au.house_construction`, `abs.au.dwelling_transfers`, `abs.au.population`, `abs.au.housing_value`, `abs.au.dwelling_replacement`, `rba.cash_rate`, `rba.cpi_yoy`, `rba.debt_to_income`, `rba.corp_yield_5y`, `rba.ags_5y`.
 
 ## How it works
 
@@ -64,7 +64,7 @@ go test ./...
 - Volume is transfers per resident, not the raw count: over decades the count drifts with population, so the per-capita rate is the comparable measure. The ABS dwelling-stock count starts only in 2011, so population (ABS estimated resident population, quarterly, from 1990) is the scale that spans the full series.
 - The ABS household balance sheet (Table 35, 5232.0) is published only as an XLSX data cube, not through the SDMX API, so `internal/source/abs_xlsx.go` scrapes it (a small stdlib XLSX reader lives in `internal/xlsx`). It values dwellings at replacement cost and land at market, from 1988, giving the MS index a market numerator and a replacement-cost denominator.
 - The MS index denominator must be a replacement cost, not a second market value: a market denominator (for example, value less debt) also rises with prices, which inverts the signal.
-- Credit conditions measure the flow and the price of credit, not the stock. Housing and investor credit growth (RBA D1) are rates, and the corporate credit spread (RBA F3 and F2.1) is a ratio, so they stay comparable across decades where a debt-to-income level would not. The securities spread only starts in 2013, so that leg is short.
+- Credit conditions score household leverage and the price of credit risk. Leverage is household debt-to-income (RBA E2, quarterly, 1988 →) ranked against its own history. It is structural and trends up, so it reads stretched and only trips after a real deleveraging; the buy zone is the pre-2001 range, where it met continuously from 1988 to 2000. The price of credit risk is the corporate spread over government borrowing (RBA F3 and F2.1, from 2013).
 
 ## Disclaimer
 

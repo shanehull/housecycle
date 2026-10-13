@@ -38,8 +38,8 @@ func (s Status) String() string {
 const (
 	cheapPct            = 33.0 // % percentile below which a valuation measure is cheap
 	volumeLowPct        = 25.0 // % percentile below which buying volume is at a cyclical low
-	creditGrowthLowPct  = 33.0 // % percentile below which credit growth is subdued
 	creditSpreadWidePct = 66.0 // % percentile above which credit risk is priced rather than complacent
+	debtLowPct          = 33.0 // % percentile below which household leverage is back in its low range
 	ppiFlatQoQ          = 1.0  // % q/q construction cost growth considered near zero
 	rateHaltMonths      = 3    // months without a cash-rate move considered on hold
 	realRateLowPct      = 40.0 // % real cash rate below this percentile is cheap money
@@ -277,44 +277,28 @@ func evalCreditConditions(ctx context.Context, loader Loader) Indicator {
 	ind := Indicator{
 		ID:    "credit",
 		Name:  "Credit conditions",
-		Blurb: "Credit conditions: the flow, terms, and availability of housing credit. Weak lending growth, subdued investor demand, and wide spreads (the premium over government borrowing costs) mark a washed-out market; booming growth and compressed spreads mark late-cycle euphoria. Buy when credit is tight and sober, not loose and cheap.",
+		Blurb: "Credit conditions: household leverage (debt-to-income against its own history) and the price of credit risk (the corporate spread over government borrowing). Buy when leverage is back in its low range and credit risk is priced.",
 	}
 
-	housing := loadSeries(ctx, loader, "rba.housing_credit_growth")
-	investor := loadSeries(ctx, loader, "rba.investor_credit_growth")
+	debt := loadSeries(ctx, loader, "rba.debt_to_income")
 	corp := loadSeries(ctx, loader, "rba.corp_yield_5y")
 	ags := loadSeries(ctx, loader, "rba.ags_5y")
 
 	var conditions []Condition
 	var charts []Chart
 
-	if housing != nil {
-		last, _ := analytics.Last(housing.Points)
-		pct := analytics.PercentileRank(housing.Points, last.Value)
+	if debt != nil {
+		last, _ := analytics.Last(debt.Points)
+		pct := analytics.PercentileRank(debt.Points, last.Value)
 		conditions = append(conditions, Condition{
-			Label:  "Housing credit growth subdued",
+			Label:  "Household debt-to-income low",
 			Value:  fmt.Sprintf("%.1f%% (%s)", last.Value, pctile(pct)),
-			Target: fmt.Sprintf("<=%s", ord(int(creditGrowthLowPct))),
-			Met:    pct <= creditGrowthLowPct,
+			Target: fmt.Sprintf("<=%s", ord(int(debtLowPct))),
+			Met:    pct <= debtLowPct,
 		})
 		charts = append(charts, Chart{
-			ID: "housing_credit_growth", Label: "Housing credit, year-ended growth", Unit: "%", Freq: "M",
-			Points: housing.Points, Refs: []Ref{{Label: "0%", Value: 0, Kind: "parity"}},
-		})
-	}
-
-	if investor != nil {
-		last, _ := analytics.Last(investor.Points)
-		pct := analytics.PercentileRank(investor.Points, last.Value)
-		conditions = append(conditions, Condition{
-			Label:  "Investor credit growth subdued",
-			Value:  fmt.Sprintf("%.1f%% (%s)", last.Value, pctile(pct)),
-			Target: fmt.Sprintf("<=%s", ord(int(creditGrowthLowPct))),
-			Met:    pct <= creditGrowthLowPct,
-		})
-		charts = append(charts, Chart{
-			ID: "investor_credit_growth", Label: "Investor housing credit, year-ended growth", Unit: "%", Freq: "M",
-			Points: investor.Points, Refs: []Ref{{Label: "0%", Value: 0, Kind: "parity"}},
+			ID: "debt_to_income", Label: "Household debt to income", Unit: "%", Freq: "Q",
+			Points: debt.Points, Refs: quartileRefs(debt.Points),
 		})
 	}
 
