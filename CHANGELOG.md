@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.3](https://github.com/shanehull/housecycle/compare/v1.2.2...v1.2.3) (2026-10-14)
+
+
+### Bug Fixes
+
+* correct language on og image ([ebfcd51](https://github.com/shanehull/housecycle/commit/ebfcd51fc5e196867c80d99d762341ff6690658c))
+
 ## [1.2.2](https://github.com/shanehull/housecycle/compare/v1.2.1...v1.2.2) (2026-10-14)
 
 
