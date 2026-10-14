@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/shanehull/housecycle/compare/v1.2.1...v1.2.2) (2026-10-14)
+
+
+### Bug Fixes
+
+* y/y growth not year end ([8335254](https://github.com/shanehull/housecycle/commit/83352546cd8c4161df422044b3a91f04ac638127))
+
 ## [1.2.1](https://github.com/shanehull/housecycle/compare/v1.2.0...v1.2.1) (2026-10-14)
 
 
