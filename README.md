@@ -14,11 +14,10 @@ The best signal stays off the dashboard: it is when friends stop talking about b
 | Volume               | Dwelling transfers, all buyers, per resident, so the rate stays comparable as the population drifts.                                                                                  | ABS            | 2002 →  |
 | Construction costs   | House construction cost growth ranked against its own history. Low growth marks a building sector nobody is bidding up, and it has marked the strongest gains over five to ten years. | ABS            | 1996 →  |
 | Credit conditions    | Household leverage (debt-to-income against its own history) and the price of credit risk (the corporate spread). Tight, sober credit is the entry.                                    | RBA            | 1988 →  |
-| Real cost of capital | Cash rate minus year-ended CPI inflation. Housing is the most rate-sensitive asset; a low real rate drives affordability.                                                             | RBA            | 1990 →  |
 
-Each signal evaluates one or more rules and returns a status: not yet, forming, or buy conditions met. The header score is how many of the five are at buy.
+Each signal evaluates one or more rules and returns a status: not yet, forming, or buy conditions met. The header score is how many of the four are at buy.
 
-Series IDs: `oecd.au.hpi`, `abs.au.awe`, `abs.au.house_construction`, `abs.au.dwelling_transfers`, `abs.au.population`, `abs.au.housing_value`, `abs.au.dwelling_replacement`, `rba.housing_credit`, `rba.cash_rate`, `rba.cpi_yoy`, `rba.debt_to_income`, `rba.corp_yield_5y`, `rba.ags_5y`.
+Series IDs: `oecd.au.hpi`, `abs.au.awe`, `abs.au.house_construction`, `abs.au.dwelling_transfers`, `abs.au.population`, `abs.au.housing_value`, `abs.au.dwelling_replacement`, `rba.housing_credit`, `rba.debt_to_income`, `rba.corp_yield_5y`, `rba.ags_5y`.
 
 ## How it works
 

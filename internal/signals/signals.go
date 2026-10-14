@@ -1,6 +1,6 @@
 // Package signals turns stored series into the housing buy signals: valuation
-// (price to income and the detrended Q ratio), volume, construction costs,
-// credit conditions, and the real cost of capital.
+// (price to income and the detrended Q ratio), volume, construction costs, and
+// credit conditions.
 package signals
 
 import (
@@ -41,7 +41,6 @@ const (
 	costLowPct          = 33.0 // % percentile below which construction cost growth is low
 	creditSpreadWidePct = 66.0 // % percentile above which credit risk is priced rather than complacent
 	debtLowPct          = 33.0 // % percentile below which household leverage is back in its low range
-	realRateLowPct      = 40.0 // % real cash rate below this percentile is cheap money
 )
 
 // Loader retrieves a stored series by ID.
@@ -102,7 +101,6 @@ func Evaluate(ctx context.Context, loader Loader) *Dashboard {
 			evalVolume(ctx, loader),
 			evalPrices(ctx, loader),
 			evalCreditConditions(ctx, loader),
-			evalRates(ctx, loader),
 		},
 	}
 	for _, ind := range d.Indicators {
@@ -319,50 +317,6 @@ func evalCreditConditions(ctx context.Context, loader Loader) Indicator {
 	}
 
 	finish(&ind, conditions, charts)
-	return ind
-}
-
-// --- Real cost of capital -------------------------------------------------------
-
-func evalRates(ctx context.Context, loader Loader) Indicator {
-	ind := Indicator{
-		ID:    "rates",
-		Name:  "Real cost of capital",
-		Blurb: "The real cost of housing finance: the cash rate minus year-ended CPI inflation. Housing is the most rate-sensitive asset, and a low real rate is what turns affordability.",
-	}
-
-	cash := loadSeries(ctx, loader, "rba.cash_rate")
-	cpi := loadSeries(ctx, loader, "rba.cpi_yoy")
-	if cash == nil || cpi == nil {
-		finish(&ind, nil, nil)
-		return ind
-	}
-
-	var real []model.Point
-	for _, p := range cash.Points {
-		c, ok := analytics.AsOf(cpi.Points, p.Date)
-		if !ok {
-			continue
-		}
-		real = append(real, model.Point{Date: p.Date, Value: p.Value - c})
-	}
-	if len(real) < 8 {
-		finish(&ind, nil, nil)
-		return ind
-	}
-
-	last, _ := analytics.Last(real)
-	pct := analytics.PercentileRank(real, last.Value)
-	finish(&ind, []Condition{{
-		Label:  "Real cash rate low",
-		Value:  fmt.Sprintf("%+.2f%% (%s)", last.Value, pctile(pct)),
-		Target: fmt.Sprintf("<=%s", ord(int(realRateLowPct))),
-		Met:    pct <= realRateLowPct,
-	}}, []Chart{{
-		ID: "real_rate", Label: "Real cash rate (cash rate minus CPI)", Unit: "%",
-		Freq: "M", Points: real,
-		Refs: append(quartileRefs(real), Ref{Label: "0%", Value: 0, Kind: "parity"}),
-	}})
 	return ind
 }
 

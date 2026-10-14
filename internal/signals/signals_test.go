@@ -96,19 +96,6 @@ func TestEvalValuationDetrendedQ(t *testing.T) {
 	}
 }
 
-func TestEvalRates(t *testing.T) {
-	cash := monthly(2020, 1, 36, 4.0, -0.05)
-	cpi := quarterly(2020, 1, 12, 3.0, -0.1)
-	loader := stubLoader{"rba.cash_rate": cash, "rba.cpi_yoy": cpi}
-	ind := evalRates(context.Background(), loader)
-	if ind.Status == Unknown {
-		t.Fatal("expected an evaluation")
-	}
-	if len(ind.Charts) != 1 || len(ind.Charts[0].Refs) == 0 {
-		t.Fatal("expected a chart with a reference line")
-	}
-}
-
 func TestEvalPrices(t *testing.T) {
 	// Build cost growth collapses at the end, so the latest year-ended rate is the lowest on record.
 	pts := quarterly(2000, 1, 39, 100, 2)
@@ -145,12 +132,10 @@ func TestEvaluateCounts(t *testing.T) {
 		"rba.debt_to_income":        quarterly(1988, 1, 120, 160, -1),
 		"rba.corp_yield_5y":         monthly(2002, 7, 120, 4, 0.05),
 		"rba.ags_5y":                monthly(2002, 7, 120, 3, 0),
-		"rba.cash_rate":             monthly(2020, 1, 36, 4.0, -0.05),
-		"rba.cpi_yoy":               quarterly(2020, 1, 12, 3.0, -0.1),
 	}
 	d := Evaluate(context.Background(), loader)
-	if d.Evaluated != 5 {
-		t.Fatalf("want 5 evaluated, got %d", d.Evaluated)
+	if d.Evaluated != 4 {
+		t.Fatalf("want 4 evaluated, got %d", d.Evaluated)
 	}
 	if d.Score < 0 || d.Score > 1 {
 		t.Fatalf("score out of range: %v", d.Score)

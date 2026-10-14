@@ -11,16 +11,13 @@ import (
 	"github.com/shanehull/housecycle/internal/model"
 )
 
-// RBA fetches the cash rate target (F1.1), year-ended CPI inflation (G1), the
-// housing credit stock (D2), household debt-to-income (E2), and the corporate
-// and government bond yields behind the credit spread (F3, F2.1).
+// RBA fetches the housing credit stock (D2), household debt-to-income (E2), and
+// the corporate and government bond yields behind the credit spread (F3, F2.1).
 type RBA struct{}
 
 func (RBA) Name() string { return "RBA" }
 
 const (
-	rbaF11 = "https://www.rba.gov.au/statistics/tables/csv/f1.1-data.csv"
-	rbaG1  = "https://www.rba.gov.au/statistics/tables/csv/g1-data.csv"
 	rbaD2  = "https://www.rba.gov.au/statistics/tables/csv/d2-data.csv"
 	rbaF21 = "https://www.rba.gov.au/statistics/tables/csv/f2.1-data.csv"
 	rbaF3  = "https://www.rba.gov.au/statistics/tables/csv/f3-data.csv"
@@ -64,8 +61,6 @@ func (RBA) Fetch(ctx context.Context, cfg Config) ([]model.Series, error) {
 	}
 
 	return fetchAll(ctx,
-		column(rbaF11, "Cash Rate Target", "rba.cash_rate", "RBA cash rate target (monthly average)", "M"),
-		column(rbaG1, "Year-ended inflation", "rba.cpi_yoy", "CPI inflation, year-ended", "Q"),
 		housingCredit,
 		column(rbaF3, "Non-financial corporate A-rated bonds – Yield – 5 year target tenor", "rba.corp_yield_5y", "Non-financial corporate A-rated bond yield, 5 year", "M"),
 		column(rbaF21, "Australian Government 5 year bond", "rba.ags_5y", "Australian Government 5 year bond yield", "M"),

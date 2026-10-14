@@ -406,9 +406,9 @@ func cssVars(d *signals.Dashboard) template.CSS {
 	return template.CSS(b.String())
 }
 
-// formingThreshold is the majority of the five signals: below it the headline
-// reports no buy rather than conditions forming.
-const formingThreshold = 3
+// formingThreshold is the count of buy signals at which the headline reports
+// conditions forming rather than no buy.
+const formingThreshold = 2
 
 func headline(hits, evaluated int) string {
 	switch {
