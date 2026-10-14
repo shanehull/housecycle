@@ -97,7 +97,7 @@ func TestEvalValuationDetrendedQ(t *testing.T) {
 }
 
 func TestEvalPrices(t *testing.T) {
-	// Build cost growth collapses at the end, so the latest year-ended rate is the lowest on record.
+	// Build cost growth collapses at the end, so the latest y/y growth is the lowest on record.
 	pts := quarterly(2000, 1, 39, 100, 2)
 	pts = append(pts, model.Point{Date: time.Date(2009, time.October, 1, 0, 0, 0, 0, time.UTC), Value: 100})
 	loader := stubLoader{"abs.au.house_construction": pts}

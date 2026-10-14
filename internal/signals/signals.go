@@ -250,7 +250,7 @@ func evalPrices(ctx context.Context, loader Loader) Indicator {
 				Met:    pct <= costLowPct,
 			})
 			charts = append(charts, Chart{
-				ID: "cost_yoy", Label: "House construction cost, year-ended growth", Unit: "%", Freq: "Q",
+				ID: "cost_yoy", Label: "House construction cost, y/y growth", Unit: "%", Freq: "Q",
 				Points: yoy, Refs: quartileRefs(yoy),
 			})
 		}
