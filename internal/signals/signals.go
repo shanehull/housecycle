@@ -1,6 +1,6 @@
 // Package signals turns stored series into the housing buy signals: valuation
-// (price to income and the detrended Q ratio), volume, price stability, credit
-// conditions, and the real cost of capital.
+// (price to income and the detrended Q ratio), volume, construction costs,
+// credit conditions, and the real cost of capital.
 package signals
 
 import (
@@ -38,10 +38,9 @@ func (s Status) String() string {
 const (
 	cheapPct            = 33.0 // % percentile below which a valuation measure is cheap
 	volumeLowPct        = 25.0 // % percentile below which buying volume is at a cyclical low
+	costLowPct          = 33.0 // % percentile below which construction cost growth is low
 	creditSpreadWidePct = 66.0 // % percentile above which credit risk is priced rather than complacent
 	debtLowPct          = 33.0 // % percentile below which household leverage is back in its low range
-	ppiFlatQoQ          = 1.0  // % q/q construction cost growth considered near zero
-	rateHaltMonths      = 3    // months without a cash-rate move considered on hold
 	realRateLowPct      = 40.0 // % real cash rate below this percentile is cheap money
 )
 
@@ -229,42 +228,34 @@ func evalVolume(ctx context.Context, loader Loader) Indicator {
 	return ind
 }
 
-// --- Price stability ------------------------------------------------------------
+// --- Construction costs ---------------------------------------------------------
 
 func evalPrices(ctx context.Context, loader Loader) Indicator {
 	ind := Indicator{
 		ID:    "prices",
-		Name:  "Price stability",
-		Blurb: "The input side of the housing market: construction cost growth has stopped and the cash rate is on hold, so building costs and mortgage rates are not pushing prices higher.",
+		Name:  "Construction costs",
+		Blurb: "House construction cost growth ranked against its own history. Low growth marks a building sector nobody is bidding up, the kind of disinterest the buy conditions look for, and it has marked the strongest house price gains over the following five to ten years.",
 	}
 
 	var conditions []Condition
 	var charts []Chart
 
 	if cost := loadSeries(ctx, loader, "abs.au.house_construction"); cost != nil {
-		_, qoq, ok := analytics.Change(cost.Points, 1)
-		met := ok && abs(qoq) <= ppiFlatQoQ
-		conditions = append(conditions, Condition{
-			Label:  "Construction cost growth near zero",
-			Value:  fmt.Sprintf("%+.2f%% q/q", qoq),
-			Target: fmt.Sprintf("±%.1f%% q/q", ppiFlatQoQ),
-			Met:    met,
-		})
-		charts = append(charts, Chart{
-			ID: "cost_qoq", Label: "House construction cost, % change q/q", Unit: "% q/q",
-			Freq: "Q", Points: analytics.PctChange(cost.Points, 1),
-			Refs: []Ref{{Label: "0%", Value: 0, Kind: "parity"}},
-		})
-	}
-
-	if cash := loadSeries(ctx, loader, "rba.cash_rate"); cash != nil {
-		months := analytics.MonthsSinceChange(cash.Points)
-		conditions = append(conditions, Condition{
-			Label:  "Cash rate on hold",
-			Value:  fmt.Sprintf("%dmo flat", months),
-			Target: fmt.Sprintf(">=%d months", rateHaltMonths),
-			Met:    months >= rateHaltMonths,
-		})
+		yoy := analytics.PctChange(cost.Points, 4)
+		if len(yoy) >= 8 {
+			last, _ := analytics.Last(yoy)
+			pct := analytics.PercentileRank(yoy, last.Value)
+			conditions = append(conditions, Condition{
+				Label:  "Construction cost growth low",
+				Value:  fmt.Sprintf("%+.1f%% y/y (%s)", last.Value, pctile(pct)),
+				Target: fmt.Sprintf("<=%s", ord(int(costLowPct))),
+				Met:    pct <= costLowPct,
+			})
+			charts = append(charts, Chart{
+				ID: "cost_yoy", Label: "House construction cost, year-ended growth", Unit: "%", Freq: "Q",
+				Points: yoy, Refs: quartileRefs(yoy),
+			})
+		}
 	}
 
 	finish(&ind, conditions, charts)
@@ -418,13 +409,6 @@ func loadSeries(ctx context.Context, loader Loader, id string) *model.Series {
 		return nil
 	}
 	return &ser
-}
-
-func abs(v float64) float64 {
-	if v < 0 {
-		return -v
-	}
-	return v
 }
 
 // scale multiplies every point value, used to express a ratio in readable units.

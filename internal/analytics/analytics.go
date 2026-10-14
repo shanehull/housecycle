@@ -44,19 +44,6 @@ func AsOf(points []model.Point, t time.Time) (float64, bool) {
 	return points[idx-1].Value, true
 }
 
-// Change returns the change over the last n observations (n back from the end).
-func Change(points []model.Point, n int) (abs, pctChange float64, ok bool) {
-	if len(points) <= n {
-		return 0, 0, false
-	}
-	cur := points[len(points)-1].Value
-	prev := points[len(points)-1-n].Value
-	if prev == 0 {
-		return cur - prev, 0, false
-	}
-	return cur - prev, (cur - prev) / prev * 100, true
-}
-
 // PctChange returns the period-on-period percentage change with the given lag,
 // dated at the later point. It turns a trending index into a stationary series.
 func PctChange(points []model.Point, lag int) []model.Point {
@@ -72,20 +59,6 @@ func PctChange(points []model.Point, lag int) []model.Point {
 		out = append(out, model.Point{Date: points[i].Date, Value: (points[i].Value/prev - 1) * 100})
 	}
 	return out
-}
-
-// MonthsSinceChange returns how many periods since the series last changed value.
-func MonthsSinceChange(points []model.Point) int {
-	if len(points) < 2 {
-		return 0
-	}
-	last := points[len(points)-1].Value
-	for i := len(points) - 2; i >= 0; i-- {
-		if points[i].Value != last {
-			return len(points) - 1 - i
-		}
-	}
-	return len(points) - 1
 }
 
 // RatioSeries returns fast/slow with slow forward-filled onto each fast date.

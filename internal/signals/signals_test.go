@@ -110,13 +110,16 @@ func TestEvalRates(t *testing.T) {
 }
 
 func TestEvalPrices(t *testing.T) {
-	loader := stubLoader{
-		"abs.au.house_construction": quarterly(2000, 1, 40, 100, 0.05),
-		"rba.cash_rate":             monthly(2020, 1, 24, 4.35, 0),
-	}
+	// Build cost growth collapses at the end, so the latest year-ended rate is the lowest on record.
+	pts := quarterly(2000, 1, 39, 100, 2)
+	pts = append(pts, model.Point{Date: time.Date(2009, time.October, 1, 0, 0, 0, 0, time.UTC), Value: 100})
+	loader := stubLoader{"abs.au.house_construction": pts}
 	ind := evalPrices(context.Background(), loader)
 	if ind.Status != Buy {
 		t.Fatalf("want buy, got %v (%+v)", ind.Status, ind.Conditions)
+	}
+	if len(ind.Charts) != 1 {
+		t.Fatalf("want a chart, got %d", len(ind.Charts))
 	}
 }
 
