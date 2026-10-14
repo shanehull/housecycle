@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.1](https://github.com/shanehull/housecycle/compare/v1.2.0...v1.2.1) (2026-10-14)
+
+
+### Bug Fixes
+
+* remove moot real rate ([baad136](https://github.com/shanehull/housecycle/commit/baad136d63ea5e5b1dce587987c7e27eb65312e3))
+* use construction cost growth and cut cash rate stability ([f0e600f](https://github.com/shanehull/housecycle/commit/f0e600f3d10ca3c532d717864a2dd55d4cbb7ee1))
+
 ## [1.2.0](https://github.com/shanehull/housecycle/compare/v1.1.0...v1.2.0) (2026-10-13)
 
 
