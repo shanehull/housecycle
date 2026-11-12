@@ -1,6 +1,6 @@
 // Package signals turns stored series into the housing buy signals: valuation
-// (price to income and price to rent), leverage (the detrended Q ratio), volume,
-// construction costs, and credit conditions.
+// (price to income and price to rent), volume, construction costs, and credit
+// conditions.
 package signals
 
 import (
@@ -98,7 +98,6 @@ func Evaluate(ctx context.Context, loader Loader) *Dashboard {
 	d := &Dashboard{
 		Indicators: []Indicator{
 			evalValuation(ctx, loader),
-			evalLeverage(ctx, loader),
 			evalVolume(ctx, loader),
 			evalPrices(ctx, loader),
 			evalCreditConditions(ctx, loader),
@@ -168,53 +167,6 @@ func evalValuation(ctx context.Context, loader Loader) Indicator {
 			ID: "ptr", Label: "Price-to-rent", Unit: "index", Freq: "Q",
 			Points: rent.Points, Refs: quartileRefs(rent.Points),
 		})
-	}
-
-	finish(&ind, conditions, charts)
-	return ind
-}
-
-// --- Leverage: the detrended Q ratio ---
-
-func evalLeverage(ctx context.Context, loader Loader) Indicator {
-	ind := Indicator{
-		ID:    "leverage",
-		Name:  "Leverage",
-		Blurb: "The detrended housing Q ratio: owner equity in the dwelling stock over the replacement cost of the dwellings. A low reading marks the stressed leverage point where the buy conditions look.",
-	}
-
-	var conditions []Condition
-	var charts []Chart
-
-	value := loadSeries(ctx, loader, "abs.au.housing_value")
-	replacement := loadSeries(ctx, loader, "abs.au.dwelling_replacement")
-	debt := loadSeries(ctx, loader, "rba.housing_credit")
-	if value != nil && replacement != nil && debt != nil {
-		var equity []model.Point
-		for _, p := range value.Points {
-			d, ok := analytics.AsOf(debt.Points, p.Date)
-			if !ok {
-				continue
-			}
-			equity = append(equity, model.Point{Date: p.Date, Value: p.Value - d})
-		}
-		ratio := analytics.RatioSeries(equity, replacement.Points)
-		q := analytics.Detrend(ratio)
-		if len(q) >= 8 {
-			last, _ := analytics.Last(q)
-			pct := analytics.PercentileRank(q, last.Value)
-			conditions = append(conditions, Condition{
-				Label:  "Detrended Q ratio cheap",
-				Value:  fmt.Sprintf("%.2f (%s)", last.Value, pctile(pct)),
-				Target: fmt.Sprintf("<=%s", ord(int(cheapPct))),
-				Met:    pct <= cheapPct,
-			})
-			charts = append(charts, Chart{
-				ID: "q", Label: "Detrended Q ratio", Unit: "index", Freq: "Q",
-				Points: q, Refs: quartileRefs(q),
-			})
-			ind.Note = fmt.Sprintf("Owner equity in residential land and dwellings over the replacement cost of the dwellings, scaled by its running geometric mean, from %s. The numerator is equity, so the ratio is a leverage measure, not a valuation measure.", ratio[0].Date.Format("Jan 2006"))
-		}
 	}
 
 	finish(&ind, conditions, charts)

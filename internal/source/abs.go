@@ -46,20 +46,6 @@ func (a ABS) Fetch(ctx context.Context, cfg Config) ([]model.Series, error) {
 				{ID: "abs.au.dwelling_transfers", Label: "Dwelling transfers, Australia (established and attached)", Unit: "count", Freq: "Q", Source: "ABS", Points: points},
 			}, nil
 		},
-		func(ctx context.Context) ([]model.Series, error) {
-			household, err := a.fetchHouseholdBalanceSheet(ctx, cfg)
-			if err != nil {
-				return nil, fmt.Errorf("abs household balance sheet: %w", err)
-			}
-			return household, nil
-		},
-		func(ctx context.Context) ([]model.Series, error) {
-			dwellings, err := a.fetchASNAHouseholdDwellings(ctx, cfg)
-			if err != nil {
-				return nil, fmt.Errorf("abs ASNA household balance sheet: %w", err)
-			}
-			return dwellings, nil
-		},
 	)
 }
 

@@ -96,23 +96,3 @@ func Quantile(points []model.Point, p float64) (float64, bool) {
 	frac := idx - float64(lo)
 	return vals[lo]*(1-frac) + vals[hi]*frac, true
 }
-
-// Detrend divides each ratio by the cumulative geometric mean of all ratios up
-// to that point, giving a time-invariant, mean-reverting oscillator centred on
-// 1.0 that isolates short-term valuation anomalies.
-func Detrend(ratio []model.Point) []model.Point {
-	out := make([]model.Point, 0, len(ratio))
-	product := 1.0
-	for i, p := range ratio {
-		if p.Value == 0 {
-			continue
-		}
-		product *= p.Value
-		geoMean := math.Pow(product, 1.0/float64(i+1))
-		if geoMean == 0 {
-			continue
-		}
-		out = append(out, model.Point{Date: p.Date, Value: p.Value / geoMean})
-	}
-	return out
-}
