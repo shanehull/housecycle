@@ -69,9 +69,14 @@ func TestEvalCreditConditionsUnknownWithoutData(t *testing.T) {
 
 func TestEvalValuationCheap(t *testing.T) {
 	// Prices flat while earnings rise => price-to-income falls to a low percentile.
-	awe := quarterly(1995, 1, 40, 2000, 40)
+	income := quarterly(1995, 1, 40, 200000, 1000)
+	population := quarterly(1995, 1, 40, 20000000, 100000)
 	hpi := quarterly(1995, 1, 40, 100, 0)
-	loader := stubLoader{"abs.au.awe": awe, "oecd.au.hpi": hpi}
+	loader := stubLoader{
+		"abs.au.household_disposable_income": income,
+		"abs.au.population":                  population,
+		"oecd.au.hpi":                        hpi,
+	}
 	ind := evalValuation(context.Background(), loader)
 	if ind.Status == Unknown {
 		t.Fatal("expected an evaluation")
@@ -124,14 +129,14 @@ func TestEvalVolume(t *testing.T) {
 
 func TestEvaluateCounts(t *testing.T) {
 	loader := stubLoader{
-		"oecd.au.hpi":               quarterly(1996, 1, 60, 60, 1),
-		"abs.au.awe":                quarterly(1996, 1, 60, 1000, 30),
-		"abs.au.house_construction": quarterly(1996, 1, 60, 60, 1.2),
-		"abs.au.dwelling_transfers": monthly(2002, 7, 120, 40000, -100),
-		"abs.au.population":         monthly(2002, 7, 120, 20000000, 0),
-		"rba.debt_to_income":        quarterly(1988, 1, 120, 160, -1),
-		"rba.corp_yield_5y":         monthly(2002, 7, 120, 4, 0.05),
-		"rba.ags_5y":                monthly(2002, 7, 120, 3, 0),
+		"oecd.au.hpi":                        quarterly(1996, 1, 60, 60, 1),
+		"abs.au.household_disposable_income": quarterly(1996, 1, 60, 200000, 1000),
+		"abs.au.house_construction":          quarterly(1996, 1, 60, 60, 1.2),
+		"abs.au.dwelling_transfers":          monthly(2002, 7, 120, 40000, -100),
+		"abs.au.population":                  monthly(1996, 1, 200, 20000000, 0),
+		"rba.debt_to_income":                 quarterly(1988, 1, 120, 160, -1),
+		"rba.corp_yield_5y":                  monthly(2002, 7, 120, 4, 0.05),
+		"rba.ags_5y":                         monthly(2002, 7, 120, 3, 0),
 	}
 	d := Evaluate(context.Background(), loader)
 	if d.Evaluated != 4 {

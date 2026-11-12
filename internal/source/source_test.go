@@ -111,3 +111,32 @@ func TestParseRBAColumn(t *testing.T) {
 		t.Fatal("expected error for a missing column")
 	}
 }
+
+func TestCellDate(t *testing.T) {
+	for in, want := range map[string]string{
+		"2026-06-01":          "2026-06-01",
+		"2026-06-01 00:00:00": "2026-06-01",
+	} {
+		got, ok := cellDate(in)
+		if !ok || got.Format("2006-01-02") != want {
+			t.Fatalf("cellDate(%q) = %v %v, want %s", in, got, ok, want)
+		}
+	}
+	if _, ok := cellDate("nonsense"); ok {
+		t.Fatal("expected not ok for nonsense")
+	}
+}
+
+func TestFindColumnSA(t *testing.T) {
+	rows := [][]string{
+		{"Date", "GROSS DISPOSABLE INCOME ;", "GROSS DISPOSABLE INCOME ;"},
+		{"Unit", "$ Millions", "$ Millions"},
+		{"Series Type", "Trend", "Seasonally Adjusted"},
+	}
+	if got := findColumnSA(rows, "GROSS DISPOSABLE INCOME"); got != 2 {
+		t.Fatalf("findColumnSA = %d, want 2", got)
+	}
+	if got := findColumnSA(rows, "Missing"); got != -1 {
+		t.Fatalf("findColumnSA missing = %d, want -1", got)
+	}
+}

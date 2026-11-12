@@ -31,12 +31,17 @@ func (a ABS) Fetch(ctx context.Context, cfg Config) ([]model.Series, error) {
 	}
 
 	return fetchAll(ctx,
-		sdmx("AWE", "1.0.0", "1.1.3.7.TOT.10.AUS.S",
-			"abs.au.awe", "Average weekly earnings, all employees (persons)", "$", "S"),
 		sdmx("PPI", "1.1.3", "1.1451370.OUTPUT.Q",
 			"abs.au.house_construction", "House construction cost (PPI output)", "index", "Q"),
 		sdmx("ERP_Q", "1.0.0", "1.3.TOT.AUS.Q",
 			"abs.au.population", "Estimated resident population, Australia", "persons", "Q"),
+		func(ctx context.Context) ([]model.Series, error) {
+			income, err := a.fetchHouseholdDisposableIncome(ctx, cfg)
+			if err != nil {
+				return nil, fmt.Errorf("abs household income: %w", err)
+			}
+			return income, nil
+		},
 		func(ctx context.Context) ([]model.Series, error) {
 			points, err := a.fetchTransfers(ctx, cfg)
 			if err != nil {
