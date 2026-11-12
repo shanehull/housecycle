@@ -6,6 +6,7 @@ package signals
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/shanehull/housecycle/internal/analytics"
 	"github.com/shanehull/housecycle/internal/model"
@@ -146,7 +147,7 @@ func evalValuation(ctx context.Context, loader Loader) Indicator {
 			}
 			perCapita = append(perCapita, model.Point{Date: p.Date, Value: p.Value * 1e6 / people})
 		}
-		pti := analytics.RatioSeries(hpi.Points, perCapita)
+		pti := indexTo(analytics.RatioSeries(hpi.Points, perCapita), time.Date(1996, time.October, 1, 0, 0, 0, 0, time.UTC))
 		if len(pti) >= 8 {
 			last, _ := analytics.Last(pti)
 			pct := analytics.PercentileRank(pti, last.Value)
@@ -156,7 +157,7 @@ func evalValuation(ctx context.Context, loader Loader) Indicator {
 				Target: fmt.Sprintf("<=%s", ord(int(cheapPct))),
 				Met:    pct <= cheapPct,
 			})
-			charts = append(charts, Chart{ID: "pti", Label: "Price-to-income", Unit: "ratio", Freq: "Q", Points: pti, Refs: quartileRefs(pti)})
+			charts = append(charts, Chart{ID: "pti", Label: "Price-to-income", Unit: "index, 1996=100", Freq: "Q", Points: pti, Refs: quartileRefs(pti)})
 		}
 	}
 
@@ -165,8 +166,9 @@ func evalValuation(ctx context.Context, loader Loader) Indicator {
 	// operating costs would be lower, but the expense ratio is stable over long
 	// periods, so the rank is similar.
 	if rent != nil && len(rent.Points) >= 8 {
-		last, _ := analytics.Last(rent.Points)
-		pct := analytics.PercentileRank(rent.Points, last.Value)
+		ptr := indexTo(rent.Points, time.Date(1996, time.October, 1, 0, 0, 0, 0, time.UTC))
+		last, _ := analytics.Last(ptr)
+		pct := analytics.PercentileRank(ptr, last.Value)
 		conditions = append(conditions, Condition{
 			Label:  "Price-to-rent cheap",
 			Value:  pctile(pct),
@@ -174,8 +176,8 @@ func evalValuation(ctx context.Context, loader Loader) Indicator {
 			Met:    pct <= cheapPct,
 		})
 		charts = append(charts, Chart{
-			ID: "ptr", Label: "Price-to-rent", Unit: "index", Freq: "Q",
-			Points: rent.Points, Refs: quartileRefs(rent.Points),
+			ID: "ptr", Label: "Price-to-rent", Unit: "index, 1996=100", Freq: "Q",
+			Points: ptr, Refs: quartileRefs(ptr),
 		})
 	}
 
@@ -366,6 +368,26 @@ func scale(points []model.Point, f float64) []model.Point {
 		out[i] = model.Point{Date: p.Date, Value: p.Value * f}
 	}
 	return out
+}
+
+// indexTo rebases a series to 100 at baseDate. If the series starts after the
+// base date, it falls back to the first observation so short test or partial
+// series still produce a chart.
+func indexTo(points []model.Point, baseDate time.Time) []model.Point {
+	var base float64
+	for _, p := range points {
+		if !p.Date.Before(baseDate) {
+			base = p.Value
+			break
+		}
+	}
+	if base == 0 && len(points) > 0 {
+		base = points[0].Value
+	}
+	if base == 0 {
+		return nil
+	}
+	return scale(points, 100/base)
 }
 
 // quartileRefs returns Q1 and Q3 reference lines for a series.
