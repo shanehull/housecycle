@@ -81,18 +81,18 @@ func TestEvalValuationCheap(t *testing.T) {
 	}
 }
 
-func TestEvalValuationDetrendedQ(t *testing.T) {
+func TestEvalValuationPriceToRent(t *testing.T) {
+	// Flat prices as rent rises would leave the price-to-rent ratio low.
 	loader := stubLoader{
-		"abs.au.housing_value":        quarterly(1990, 1, 120, 1000, 5),
-		"abs.au.dwelling_replacement": quarterly(1990, 1, 120, 800, 0),
-		"rba.housing_credit":          monthly(1990, 1, 360, 200, 0),
+		"oecd.au.hpi":           quarterly(1996, 1, 60, 100, 0),
+		"oecd.au.price_to_rent": quarterly(1996, 1, 60, 120, -1),
 	}
 	ind := evalValuation(context.Background(), loader)
 	if ind.Status == Unknown {
 		t.Fatal("expected an evaluation")
 	}
-	if len(ind.Charts) != 1 || ind.Charts[0].ID != "q" {
-		t.Fatalf("want the detrended Q chart, got %+v", ind.Charts)
+	if len(ind.Charts) != 1 || ind.Charts[0].ID != "ptr" {
+		t.Fatalf("want the price-to-rent chart, got %+v", ind.Charts)
 	}
 }
 

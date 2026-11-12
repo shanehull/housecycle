@@ -10,31 +10,41 @@ import (
 	"github.com/shanehull/housecycle/internal/model"
 )
 
-// OECD fetches the OECD nominal house price index for Australia (quarterly, from
-// 1970, 2015 = 100) from the keyless OECD SDMX API. It is the price leg of the
-// price-to-income valuation measure.
+// OECD fetches the OECD nominal house price index and the house price to rent
+// ratio for Australia (quarterly, 2015 = 100) from the keyless OECD SDMX API.
+// The house price index is the price leg of price-to-income and price-to-rent.
 type OECD struct{}
 
 func (OECD) Name() string { return "OECD" }
 
-const oecdHPI = "https://sdmx.oecd.org/public/rest/data/" +
-	"OECD.ECO.MPD,DSD_AN_HOUSE_PRICES@DF_HOUSE_PRICES,1.0/AUS.Q.HPI.?format=csvfile"
+const oecdBase = "https://sdmx.oecd.org/public/rest/data/" +
+	"OECD.ECO.MPD,DSD_AN_HOUSE_PRICES@DF_HOUSE_PRICES,1.0/AUS.Q."
 
 func (OECD) Fetch(ctx context.Context, cfg Config) ([]model.Series, error) {
-	body, err := get(ctx, cfg, oecdHPI, "text/csv", nil)
+	return fetchAll(ctx,
+		func(ctx context.Context) ([]model.Series, error) {
+			return oecdSeries(ctx, cfg, "HPI", "oecd.au.hpi", "Nominal house price index, Australia (2015 = 100)")
+		},
+		func(ctx context.Context) ([]model.Series, error) {
+			return oecdSeries(ctx, cfg, "HPI_RPI", "oecd.au.price_to_rent", "House price to rent ratio, Australia (2015 = 100)")
+		},
+	)
+}
+
+func oecdSeries(ctx context.Context, cfg Config, measure, id, label string) ([]model.Series, error) {
+	body, err := get(ctx, cfg, oecdBase+measure+".?format=csvfile", "text/csv", nil)
 	if err != nil {
 		return nil, err
 	}
 	points, err := parsePeriodValueCSV(body)
 	if err != nil {
-		return nil, fmt.Errorf("oecd house prices: %w", err)
+		return nil, fmt.Errorf("oecd %s: %w", measure, err)
 	}
 	if len(points) == 0 {
-		return nil, fmt.Errorf("oecd house prices: no points")
+		return nil, fmt.Errorf("oecd %s: no points", measure)
 	}
 	return []model.Series{{
-		ID: "oecd.au.hpi", Label: "Nominal house price index, Australia (2015 = 100)",
-		Unit: "index", Freq: "Q", Source: "OECD", Points: points,
+		ID: id, Label: label, Unit: "index", Freq: "Q", Source: "OECD", Points: points,
 	}}, nil
 }
 

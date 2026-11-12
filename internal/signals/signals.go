@@ -1,6 +1,6 @@
 // Package signals turns stored series into the housing buy signals: valuation
-// (price to income and the detrended Q ratio), volume, construction costs, and
-// credit conditions.
+// (price to income and price to rent), volume, construction costs, and credit
+// conditions.
 package signals
 
 import (
@@ -118,17 +118,18 @@ func Evaluate(ctx context.Context, loader Loader) *Dashboard {
 	return d
 }
 
-// --- Valuation: price to income and the detrended Q ratio ---
+// --- Valuation: price to income and price to rent ---
 
 func evalValuation(ctx context.Context, loader Loader) Indicator {
 	ind := Indicator{
 		ID:    "valuation",
 		Name:  "Valuation",
-		Blurb: "Australian house prices measured against average weekly earnings, and the detrended Q ratio: the dwelling stock net of its housing debt, over the cost of replacing it, scaled by its running geometric mean. Cheap on both is the strongest buy signal.",
+		Blurb: "Australian house prices measured against average weekly earnings and rent. Cheap on both is the strongest buy signal.",
 	}
 
 	hpi := loadSeries(ctx, loader, "oecd.au.hpi")
 	awe := loadSeries(ctx, loader, "abs.au.awe")
+	rent := loadSeries(ctx, loader, "oecd.au.price_to_rent")
 
 	var conditions []Condition
 	var charts []Chart
@@ -149,40 +150,23 @@ func evalValuation(ctx context.Context, loader Loader) Indicator {
 		}
 	}
 
-	// Detrended Q ratio: the market value of the dwelling stock less the housing
-	// credit against it, over what the structure would cost to rebuild, then
-	// divided by that ratio's running geometric mean so the oscillator is
-	// time-invariant and mean-reverting. Market value and replacement cost are
-	// the ABS household balance sheet; housing credit is RBA D2.
-	value := loadSeries(ctx, loader, "abs.au.housing_value")
-	replacement := loadSeries(ctx, loader, "abs.au.dwelling_replacement")
-	debt := loadSeries(ctx, loader, "rba.housing_credit")
-	if value != nil && replacement != nil && debt != nil {
-		var equity []model.Point
-		for _, p := range value.Points {
-			d, ok := analytics.AsOf(debt.Points, p.Date)
-			if !ok {
-				continue
-			}
-			equity = append(equity, model.Point{Date: p.Date, Value: p.Value - d})
-		}
-		ratio := analytics.RatioSeries(equity, replacement.Points)
-		q := analytics.Detrend(ratio)
-		if len(q) >= 8 {
-			last, _ := analytics.Last(q)
-			pct := analytics.PercentileRank(q, last.Value)
-			conditions = append(conditions, Condition{
-				Label:  "Detrended Q ratio cheap",
-				Value:  fmt.Sprintf("%.2f (%s)", last.Value, pctile(pct)),
-				Target: fmt.Sprintf("<=%s", ord(int(cheapPct))),
-				Met:    pct <= cheapPct,
-			})
-			charts = append(charts, Chart{
-				ID: "q", Label: "Detrended Q ratio", Unit: "index", Freq: "Q",
-				Points: q, Refs: quartileRefs(q),
-			})
-			ind.Note = fmt.Sprintf("Residential land and dwellings less housing credit, over dwellings at replacement cost, scaled by its running geometric mean, from %s.", ratio[0].Date.Format("Jan 2006"))
-		}
+	// Price to rent. The OECD series is already house prices over the rent
+	// index; its inverse is the gross rental yield. A net cap rate after
+	// operating costs would be lower, but the expense ratio is stable over long
+	// periods, so the rank is similar.
+	if rent != nil && len(rent.Points) >= 8 {
+		last, _ := analytics.Last(rent.Points)
+		pct := analytics.PercentileRank(rent.Points, last.Value)
+		conditions = append(conditions, Condition{
+			Label:  "Price-to-rent cheap",
+			Value:  pctile(pct),
+			Target: fmt.Sprintf("<=%s", ord(int(cheapPct))),
+			Met:    pct <= cheapPct,
+		})
+		charts = append(charts, Chart{
+			ID: "ptr", Label: "Price-to-rent", Unit: "index", Freq: "Q",
+			Points: rent.Points, Refs: quartileRefs(rent.Points),
+		})
 	}
 
 	finish(&ind, conditions, charts)

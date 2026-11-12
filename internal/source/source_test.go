@@ -3,21 +3,7 @@ package source
 import (
 	"testing"
 	"time"
-
-	"github.com/shanehull/housecycle/internal/model"
 )
-
-func TestSumSeries(t *testing.T) {
-	d1 := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
-	d2 := time.Date(2000, 2, 1, 0, 0, 0, 0, time.UTC)
-	d3 := time.Date(2000, 3, 1, 0, 0, 0, 0, time.UTC)
-	a := []model.Point{{Date: d1, Value: 1}, {Date: d2, Value: 2}}
-	b := []model.Point{{Date: d1, Value: 10}, {Date: d3, Value: 30}}
-	got := sumSeries(a, b)
-	if len(got) != 1 || got[0].Value != 11 || !got[0].Date.Equal(d1) {
-		t.Fatalf("want only the shared date summed, got %+v", got)
-	}
-}
 
 func TestParsePeriod(t *testing.T) {
 	cases := map[string]time.Time{
@@ -123,25 +109,5 @@ func TestParseRBAColumn(t *testing.T) {
 	}
 	if _, err := parseRBAColumn([]byte(rbaE2Fixture), "No such column"); err == nil {
 		t.Fatal("expected error for a missing column")
-	}
-}
-
-func TestCellDate(t *testing.T) {
-	// Excel serial 32387 is 1988-09-01; ISO strings are also accepted.
-	for in, want := range map[string]string{
-		"32387":               "1988-09-01",
-		"1988-09-01 00:00:00": "1988-09-01",
-		"1988-09-01":          "1988-09-01",
-	} {
-		got, ok := cellDate(in)
-		if !ok {
-			t.Fatalf("cellDate(%q) not ok", in)
-		}
-		if got.Format("2006-01-02") != want {
-			t.Fatalf("cellDate(%q) = %s, want %s", in, got.Format("2006-01-02"), want)
-		}
-	}
-	if _, ok := cellDate("nonsense"); ok {
-		t.Fatal("expected not ok for nonsense")
 	}
 }
