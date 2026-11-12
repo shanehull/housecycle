@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/shanehull/housecycle/compare/v1.3.0...v1.3.1) (2026-11-12)
+
+
+### Bug Fixes
+
+* label the valuation charts with the 1996 index base ([#12](https://github.com/shanehull/housecycle/issues/12)) ([b3e7a84](https://github.com/shanehull/housecycle/commit/b3e7a8436d815598cfe4d885b23543acc1ec0107))
+
 ## [1.3.0](https://github.com/shanehull/housecycle/compare/v1.2.2...v1.3.0) (2026-11-12)
 
 
