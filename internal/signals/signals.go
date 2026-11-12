@@ -157,7 +157,7 @@ func evalValuation(ctx context.Context, loader Loader) Indicator {
 				Target: fmt.Sprintf("<=%s", ord(int(cheapPct))),
 				Met:    pct <= cheapPct,
 			})
-			charts = append(charts, Chart{ID: "pti", Label: "Price-to-income", Unit: "index, 1996=100", Freq: "Q", Points: pti, Refs: quartileRefs(pti)})
+			charts = append(charts, Chart{ID: "pti", Label: "Price-to-income (1996 = 100)", Unit: "index, 1996=100", Freq: "Q", Points: pti, Refs: quartileRefs(pti)})
 		}
 	}
 
@@ -176,7 +176,7 @@ func evalValuation(ctx context.Context, loader Loader) Indicator {
 			Met:    pct <= cheapPct,
 		})
 		charts = append(charts, Chart{
-			ID: "ptr", Label: "Price-to-rent", Unit: "index, 1996=100", Freq: "Q",
+			ID: "ptr", Label: "Price-to-rent (1996 = 100)", Unit: "index, 1996=100", Freq: "Q",
 			Points: ptr, Refs: quartileRefs(ptr),
 		})
 	}
