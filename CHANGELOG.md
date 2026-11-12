@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.3.0](https://github.com/shanehull/housecycle/compare/v1.2.2...v1.3.0) (2026-11-12)
+
+
+### Features
+
+* index the valuation measures to 1996 ([#11](https://github.com/shanehull/housecycle/issues/11)) ([e937457](https://github.com/shanehull/housecycle/commit/e937457e1f8d640a48681bfe06d579bd5ec2ccb3))
+
+
+### Bug Fixes
+
+* correct language on og image ([ebfcd51](https://github.com/shanehull/housecycle/commit/ebfcd51fc5e196867c80d99d762341ff6690658c))
+* describe price-to-income as earnings, not household income ([#7](https://github.com/shanehull/housecycle/issues/7)) ([c3bfc15](https://github.com/shanehull/housecycle/commit/c3bfc15764ba968293ab968eac96e0e771ffa00e))
+* use household disposable income for price-to-income ([#10](https://github.com/shanehull/housecycle/issues/10)) ([158d443](https://github.com/shanehull/housecycle/commit/158d443c775d4f480fbb34339373df67c48567a3))
+* use price-to-income and price-to-rent for valuation ([#9](https://github.com/shanehull/housecycle/issues/9)) ([30e7a86](https://github.com/shanehull/housecycle/commit/30e7a866a5fe0eba23b5b01ddb186adbebb18689))
+
 ## [1.2.2](https://github.com/shanehull/housecycle/compare/v1.2.1...v1.2.2) (2026-10-14)
 
 
