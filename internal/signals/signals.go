@@ -124,7 +124,7 @@ func evalValuation(ctx context.Context, loader Loader) Indicator {
 	ind := Indicator{
 		ID:    "valuation",
 		Name:  "Valuation",
-		Blurb: "Australian house prices measured against household income, and the detrended Q ratio: the dwelling stock net of its housing debt, over the cost of replacing it, scaled by its running geometric mean. Cheap on both is the strongest buy signal.",
+		Blurb: "Australian house prices measured against average weekly earnings, and the detrended Q ratio: the dwelling stock net of its housing debt, over the cost of replacing it, scaled by its running geometric mean. Cheap on both is the strongest buy signal.",
 	}
 
 	hpi := loadSeries(ctx, loader, "oecd.au.hpi")
