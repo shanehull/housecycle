@@ -53,6 +53,13 @@ func (a ABS) Fetch(ctx context.Context, cfg Config) ([]model.Series, error) {
 			}
 			return household, nil
 		},
+		func(ctx context.Context) ([]model.Series, error) {
+			dwellings, err := a.fetchASNAHouseholdDwellings(ctx, cfg)
+			if err != nil {
+				return nil, fmt.Errorf("abs ASNA household balance sheet: %w", err)
+			}
+			return dwellings, nil
+		},
 	)
 }
 
