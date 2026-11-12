@@ -124,19 +124,29 @@ func evalValuation(ctx context.Context, loader Loader) Indicator {
 	ind := Indicator{
 		ID:    "valuation",
 		Name:  "Valuation",
-		Blurb: "Australian house prices measured against average weekly earnings and rent. Cheap on both is the strongest buy signal.",
+		Blurb: "Australian house prices measured against household disposable income per capita and rent. Cheap on both is the strongest buy signal.",
 	}
 
 	hpi := loadSeries(ctx, loader, "oecd.au.hpi")
-	awe := loadSeries(ctx, loader, "abs.au.awe")
+	income := loadSeries(ctx, loader, "abs.au.household_disposable_income")
+	population := loadSeries(ctx, loader, "abs.au.population")
 	rent := loadSeries(ctx, loader, "oecd.au.price_to_rent")
 
 	var conditions []Condition
 	var charts []Chart
 
-	// Price to income.
-	if hpi != nil && awe != nil {
-		pti := analytics.RatioSeries(hpi.Points, awe.Points)
+	// Price to household income. Disposable income is published in millions of
+	// dollars; divide by population to get dollars per person.
+	if hpi != nil && income != nil && population != nil {
+		var perCapita []model.Point
+		for _, p := range income.Points {
+			people, ok := analytics.AsOf(population.Points, p.Date)
+			if !ok || people == 0 {
+				continue
+			}
+			perCapita = append(perCapita, model.Point{Date: p.Date, Value: p.Value * 1e6 / people})
+		}
+		pti := analytics.RatioSeries(hpi.Points, perCapita)
 		if len(pti) >= 8 {
 			last, _ := analytics.Last(pti)
 			pct := analytics.PercentileRank(pti, last.Value)
