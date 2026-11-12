@@ -14,7 +14,8 @@ import (
 
 // The ABS household balance sheet (Table 35, 5232.0) is published as an XLSX
 // data cube. It values dwellings at replacement cost and land at market value,
-// from 1988, giving the Q ratio its replacement-cost denominator.
+// from 1988. The combined residential land and dwellings series is a mixed
+// value: land at market plus dwellings at replacement cost.
 const absHouseholdLatest = "https://www.abs.gov.au/statistics/economy/national-accounts/" +
 	"australian-national-accounts-finance-and-wealth/latest-release"
 

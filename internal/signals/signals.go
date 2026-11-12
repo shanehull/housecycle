@@ -124,7 +124,7 @@ func evalValuation(ctx context.Context, loader Loader) Indicator {
 	ind := Indicator{
 		ID:    "valuation",
 		Name:  "Valuation",
-		Blurb: "Australian house prices measured against average weekly earnings, and the detrended Q ratio: the dwelling stock net of its housing debt, over the cost of replacing it, scaled by its running geometric mean. Cheap on both is the strongest buy signal.",
+		Blurb: "Australian house prices measured against average weekly earnings, and the detrended Q ratio: residential land at market plus dwellings at replacement cost, less housing credit, over dwelling replacement cost, scaled by its running geometric mean. Cheap on both is the strongest buy signal.",
 	}
 
 	hpi := loadSeries(ctx, loader, "oecd.au.hpi")
@@ -149,11 +149,13 @@ func evalValuation(ctx context.Context, loader Loader) Indicator {
 		}
 	}
 
-	// Detrended Q ratio: the market value of the dwelling stock less the housing
-	// credit against it, over what the structure would cost to rebuild, then
-	// divided by that ratio's running geometric mean so the oscillator is
-	// time-invariant and mean-reverting. Market value and replacement cost are
-	// the ABS household balance sheet; housing credit is RBA D2.
+	// Detrended Q ratio: residential land at market plus dwellings at
+	// replacement cost, less the housing credit against it, over dwelling
+	// replacement cost, then divided by that ratio's running geometric mean so
+	// the oscillator is time-invariant and mean-reverting. Land at market and
+	// dwelling replacement cost are the ABS household balance sheet; housing
+	// credit is RBA D2. The ratio is a hybrid: land is in the numerator, not
+	// the denominator.
 	value := loadSeries(ctx, loader, "abs.au.housing_value")
 	replacement := loadSeries(ctx, loader, "abs.au.dwelling_replacement")
 	debt := loadSeries(ctx, loader, "rba.housing_credit")
@@ -181,7 +183,7 @@ func evalValuation(ctx context.Context, loader Loader) Indicator {
 				ID: "q", Label: "Detrended Q ratio", Unit: "index", Freq: "Q",
 				Points: q, Refs: quartileRefs(q),
 			})
-			ind.Note = fmt.Sprintf("Residential land and dwellings less housing credit, over dwellings at replacement cost, scaled by its running geometric mean, from %s.", ratio[0].Date.Format("Jan 2006"))
+			ind.Note = fmt.Sprintf("Residential land at market plus dwellings at replacement cost, less housing credit, over dwelling replacement cost, scaled by its running geometric mean, from %s. The ratio is a hybrid: land is in the numerator, not the denominator.", ratio[0].Date.Format("Jan 2006"))
 		}
 	}
 
