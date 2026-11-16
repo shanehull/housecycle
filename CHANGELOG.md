@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.2](https://github.com/shanehull/housecycle/compare/v1.3.1...v1.3.2) (2026-11-16)
+
+
+### Bug Fixes
+
+* extend credit spread history back to 2005 ([#14](https://github.com/shanehull/housecycle/issues/14)) ([a7cebde](https://github.com/shanehull/housecycle/commit/a7cebde2dc77491b18a37fdb4cd80f4fb1fd9b0d))
+
 ## [1.3.1](https://github.com/shanehull/housecycle/compare/v1.3.0...v1.3.1) (2026-11-12)
 
 
