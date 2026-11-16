@@ -41,7 +41,14 @@ func (RBA) Fetch(ctx context.Context, cfg Config) ([]model.Series, error) {
 
 	return fetchAll(ctx,
 		column(rbaF3, "Non-financial corporate A-rated bonds – Yield – 5 year target tenor", "rba.corp_yield_5y", "Non-financial corporate A-rated bond yield, 5 year", "M"),
-		column(rbaF21, "Australian Government 5 year bond", "rba.ags_5y", "Australian Government 5 year bond yield", "M"),
+		func(ctx context.Context) ([]model.Series, error) {
+			sers, err := column(rbaF21, "Australian Government 5 year bond", "rba.ags_5y", "Australian Government 5 year bond yield", "M")(ctx)
+			if err != nil {
+				return nil, err
+			}
+			sers[0].Points = extendSeries(sers[0].Points, ags5yHistory)
+			return sers, nil
+		},
 		column(rbaE2, "Household debt to income", "rba.debt_to_income", "Household debt to income", "Q"),
 	)
 }

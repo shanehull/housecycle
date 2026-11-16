@@ -262,7 +262,7 @@ func evalCreditConditions(ctx context.Context, loader Loader) Indicator {
 	ind := Indicator{
 		ID:    "credit",
 		Name:  "Credit conditions",
-		Blurb: "Credit conditions: household leverage (debt-to-income against its own history) and the price of credit risk (the corporate spread over government borrowing). Buy when leverage is back in its low range and credit risk is priced.",
+		Blurb: "Credit conditions: household leverage (debt-to-income against its own history) and the price of credit risk across the wider market (the corporate spread over government borrowing). Buy when leverage is back in its low range and credit risk is priced.",
 	}
 
 	debt := loadSeries(ctx, loader, "rba.debt_to_income")
