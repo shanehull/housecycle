@@ -3,6 +3,8 @@ package source
 import (
 	"testing"
 	"time"
+
+	"github.com/shanehull/housecycle/internal/model"
 )
 
 func TestParsePeriod(t *testing.T) {
@@ -138,5 +140,36 @@ func TestFindColumnSA(t *testing.T) {
 	}
 	if got := findColumnSA(rows, "Missing"); got != -1 {
 		t.Fatalf("findColumnSA missing = %d, want -1", got)
+	}
+}
+
+func TestExtendSeriesPrefersLive(t *testing.T) {
+	history := []model.Point{
+		{Date: time.Date(2013, time.March, 1, 0, 0, 0, 0, time.UTC), Value: 3},
+		{Date: time.Date(2013, time.April, 1, 0, 0, 0, 0, time.UTC), Value: 2.9},
+	}
+	live := []model.Point{
+		{Date: time.Date(2013, time.April, 1, 0, 0, 0, 0, time.UTC), Value: 2.5},
+		{Date: time.Date(2013, time.May, 1, 0, 0, 0, 0, time.UTC), Value: 2.4},
+	}
+	got := extendSeries(live, history)
+	if len(got) != 3 {
+		t.Fatalf("want 3 points, got %d: %+v", len(got), got)
+	}
+	if got[0].Value != 3 || got[1].Value != 2.5 || got[2].Value != 2.4 {
+		t.Fatalf("unexpected merge: %+v", got)
+	}
+}
+
+func TestEmbeddedBondHistory(t *testing.T) {
+	if len(ags5yHistory) < 400 {
+		t.Fatalf("want the full monthly history, got %d points", len(ags5yHistory))
+	}
+	first, last := ags5yHistory[0], ags5yHistory[len(ags5yHistory)-1]
+	if first.Date.Year() != 1972 || last.Date.Year() != 2013 {
+		t.Fatalf("unexpected span: %v to %v", first.Date, last.Date)
+	}
+	if last.Value < 2 || last.Value > 4 {
+		t.Fatalf("implausible last yield: %v", last.Value)
 	}
 }
